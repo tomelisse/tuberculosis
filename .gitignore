@@ -1,0 +1,5 @@
+data/*
+saved/*
+*.storage
+*.pyc
+*.swo
