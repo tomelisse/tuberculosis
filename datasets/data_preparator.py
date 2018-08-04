@@ -9,17 +9,26 @@ def read_paths(how_many):
     paths = glob(query)
     return paths[:how_many]
 
+def labels_to_vectors(labels):
+    new_labels = []
+    for label in labels:
+        new_label = np.zeros(2)
+        new_label[label] = 1
+        new_labels.append(new_label)
+    return new_labels
+
 def read_data():
     images = []
     labels = []
-    paths = read_paths(20)
+    paths = read_paths(100)
     for path in paths:
         image = cv2.imread(path)
         if image.shape[0] == 4020:
             image = image.transpose((1,0,2))
         small = cv2.resize(image,(72, 64))
         images.append(small)
-        labels.append(int('1.png' in path))
+        labels.append([int('1.png' in path)])
+    labels = labels_to_vectors(labels)
     # is one-hot encoding necessary in binary problems?
     # lb = LabelBinarizer()
     # lb.fit(labels)
