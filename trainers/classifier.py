@@ -123,8 +123,8 @@ class CNN(object):
         # if one-hot encoded change 1 -> self.n_classes
         blast_init = tf.random_normal([self.n_classes])
         blast = tf.Variable(blast_init)
-        self.predictions = CNN.fully_connected_layer(fc, Wlast, blast, False)
-        # self.predictions = tf.nn.softmax(predictions)
+        predictions = CNN.fully_connected_layer(fc, Wlast, blast, False)
+        self.predictions = tf.nn.softmax(predictions)
         print 'pred:', self.predictions.get_shape().as_list()
 
     def define_operations(self):
@@ -152,6 +152,43 @@ class CNN(object):
         ax.set_ylabel('Acc')
         fig.savefig(self.savedir + '/accuracies.png')
 
+    # the only function parameter should be self
+    def draw_ROC_curves(self, predictions, labels):
+        ''' ROC curves '''
+        # plotting containers
+        fall_outs = []
+        recalls   = []
+        # let's concentrate of the 1st of the 2 classes
+        predictions = [pred[0] for pred in predictions]
+        labels = [lab[0] for lab in labels.tolist()]
+
+        thresholds = map((0.1).__mul__, range(1,10))
+        true_pos = 0
+        false_pos = 0
+        all_pos = sum(labels)
+        all_neg = len(labels) - all_pos
+        
+        for th in thresholds:
+            for pred, lab in zip(predictions, labels):
+                if pred > th:
+                    if lab == 1:
+                        true_pos += 1
+                    else:
+                        false_pos += 1
+            fall_outs.append(false_pos/all_neg)
+            recalls.append(true_pos/all_pos)
+
+        print fall_outs
+        print '==='
+        print recalls
+        fig, ax = plt.subplots()
+        ax.plot(fall_outs, recalls)
+        ax.set_title('ROC curve')
+        ax.set_xlabel('fall_out')
+        ax.set_ylabel('recall')
+        fig.savefig(self.savedir + '/ROC.png')
+
+
     def test(self, dataset):
         ''' testing '''
         with tf.Session(graph = self.graph) as sess:
@@ -161,10 +198,11 @@ class CNN(object):
             # filling for the placeholders
             feed_dict = {self.input : images, self.labels : labels}
             # operations to be run and variables to be evaluated
-            fetches = [self.loss, self.accuracy]
+            fetches = [self.loss, self.accuracy, self.predictions]
             # run!
-            loss, acc = sess.run(fetches = fetches, feed_dict = feed_dict)
+            loss, acc, preds = sess.run(fetches = fetches, feed_dict = feed_dict)
             print 'testing loss {} and accuracy {}'.format(loss, acc)
+            self.draw_ROC_curves(preds, labels)
 
     def train(self, dataset):
         ''' training '''
