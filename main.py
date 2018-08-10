@@ -25,3 +25,6 @@ if __name__ == '__main__':
 
     # train it!
     classifier.train(dataset)
+
+    # test it!
+    classifier.test(dataset)

@@ -40,3 +40,9 @@ class HdfDataset():
             labels = f['training/labels'][indices]
         return images, labels
 
+    def test_batch(self):
+        with h5py.File(self.savepath) as f:
+            images = f['testing/images'][:]
+            labels = f['testing/labels'][:]
+            return images, labels
+

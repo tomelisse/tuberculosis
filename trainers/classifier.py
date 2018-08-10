@@ -152,6 +152,20 @@ class CNN(object):
         ax.set_ylabel('Acc')
         fig.savefig(self.savedir + '/accuracies.png')
 
+    def test(self, dataset):
+        ''' testing '''
+        with tf.Session(graph = self.graph) as sess:
+            saver = tf.train.Saver()
+            saver.restore(sess, save_path = self.savedir + self.netname + '.ckpt')
+            images, labels = dataset.test_batch()
+            # filling for the placeholders
+            feed_dict = {self.input : images, self.labels : labels}
+            # operations to be run and variables to be evaluated
+            fetches = [self.loss, self.accuracy]
+            # run!
+            loss, acc = sess.run(fetches = fetches, feed_dict = feed_dict)
+            print 'testing loss {} and accuracy {}'.format(loss, acc)
+
     def train(self, dataset):
         ''' training '''
         with tf.Session(graph = self.graph) as sess:
