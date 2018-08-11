@@ -163,19 +163,15 @@ class CNN(object):
         labels = [lab[0] for lab in labels.tolist()]
 
         thresholds = map((0.1).__mul__, range(1,10))
-        # thresholds = [0.8, 0.9]
         all_pos = sum(labels)
         all_neg = len(labels) - all_pos
         
+        fall_outs = []
+        recalls   = []
         for th in thresholds:
-            true_pos = 0
-            false_pos = 0
-            for pred, lab in zip(predictions, labels):
-                if pred > th:
-                    if lab == 1:
-                        true_pos += 1
-                    else:
-                        false_pos += 1
+            class_predictions = map(int, [(pred > th) for pred in predictions])
+            true_pos = sum([lab*pred for lab, pred in zip(labels, class_predictions)])
+            false_pos = sum([(lab == 0 and pred == 1) for lab, pred in zip(labels, class_predictions)])
             fall_outs.append(false_pos/all_neg)
             recalls.append(true_pos/all_pos)
 
@@ -188,7 +184,7 @@ class CNN(object):
         ax.set_ylabel('recall')
         ax.set_xlim(xmin = 0, xmax = 1)
         ax.set_ylim(ymin = 0, ymax = 1)
-        plt.show()
+        # plt.show()
         fig.savefig(self.savedir + '/ROC.png')
 
 
